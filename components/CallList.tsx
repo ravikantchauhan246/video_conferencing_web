@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import MeetingCard from './MeetingCard';
 import { Loader } from 'lucide-react';
+import { useToast } from './ui/use-toast';
 
 const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
     const { endedCalls, upcomingCalls, callRecordings, isLoading } = useGetCalls();
     const router = useRouter();
     const [recordings, setRecordings] = useState<CallRecording[]>([])
+    const toast= useToast();
     const getCalls = () => {
         switch (type) {
             case 'ended':
@@ -36,13 +38,22 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
         }
     }
     useEffect(()=>{
+
         const fetchRecordings=async()=>{
-            const callData= await Promise.call(callRecordings.map((meeting)=>meeting.queryRecordings()))
-            // [['rec1','']]
-            const recordings=callData.filter(call=>call.recordings.length>0).flatMap(call=>call.recordings)
-           setRecordings(recordings); 
+            try {
+                const callData= await Promise.all(callRecordings.map((meeting)=>meeting.queryRecordings()))
+                // [['rec1','rec2','rec3']]
+                //['rec1','rec2','rec3']
+                const recordings=callData.filter(call=>call.recordings.length>0).flatMap(call=>call.recordings)
+               setRecordings(recordings); 
+                
+            } catch (error) {
+                toast({title:"Try again later"})
+            }
+            
         }
     },[type,callRecordings])
+
     const calls = getCalls();
     const noCallMessage = getNoCallsMessage();
     if(isLoading) return <Loader/>
@@ -55,8 +66,8 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
                     type==='ended'? '/icons/previous.svg'
                     : type==='upcoming'? '/icons/upcoming.svg' : '/icons/recordings.svg'
                 }
-                title={(meeting as Call).state.custom.description.substring(0,26) || 'No Description'}
-                date={meeting.state.startsAt.toLocaleString() || start_time.toLocaleString()}
+                title={(meeting as Call).state?.custom.description.substring(0,26) ||meeting.filename.substring(0,20) || 'No Description'}
+                date={meeting.state?.startsAt.toLocaleString() || start_time.toLocaleString()}
                 isPreviousMeeting={type==='ended'}
                 buttonIcon1={type=='recordings'?'/icons/play.svg':undefined}
                 buttonText={type==='recordings'? 'Play':"Start"}
