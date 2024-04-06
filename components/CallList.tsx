@@ -3,7 +3,7 @@
 import { useGetCalls } from '@/hooks/useGetCalls'
 import { Call, CallRecording } from '@stream-io/video-react-sdk';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MeetingCard from './MeetingCard';
 import { Loader } from 'lucide-react';
 
@@ -35,6 +35,14 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
                 return [];
         }
     }
+    useEffect(()=>{
+        const fetchRecordings=async()=>{
+            const callData= await Promise.call(callRecordings.map((meeting)=>meeting.queryRecordings()))
+            // [['rec1','']]
+            const recordings=callData.filter(call=>call.recordings.length>0).flatMap(call=>call.recordings)
+           setRecordings(recordings); 
+        }
+    },[type,callRecordings])
     const calls = getCalls();
     const noCallMessage = getNoCallsMessage();
     if(isLoading) return <Loader/>
