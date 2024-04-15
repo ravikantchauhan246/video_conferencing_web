@@ -3,8 +3,9 @@ import MeetingTypeList from "@/components/MeetingTypeList";
 
 const Home = () => {
   const now = new Date();
-  const time=now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-  const date=now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
+const date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Kolkata' });
+
   return (
     
 
